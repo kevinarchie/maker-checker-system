@@ -1,5 +1,5 @@
 # Description
-Documentation for EWAaaS (https://wagely.atlassian.net/browse/PRO-40)
+Documentation for Maker-Checker-System (https://wagely.atlassian.net/browse/TECH-2363)
 
 # Contributing
 ## Format
