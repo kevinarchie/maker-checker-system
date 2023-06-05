@@ -1,0 +1,28 @@
+@startuml Common API Call Flow
+
+participant client
+participant "Authorization Server" as aus
+participant "API Gateway" as apg
+
+client -> apg: API call
+note right
+Header:
+Authorization: Bearer {{token}} // mandatory
+Accept-language: {{en-US|id-ID}} // default: en-US
+end note
+apg -> aus: GET {{tokeninfo URL}}?token={{token}}
+aus -> apg: Token Introspection Response
+alt Invalid token
+  apg -> client: HTTP 401 Unauthorized
+  note left
+  {
+    "statusCode": 401,
+    "error": "Unauthorized",
+    "message": "Invalid Token"
+  }
+  end note
+else Valid token
+  apg -> client: API Response
+end
+
+@enduml

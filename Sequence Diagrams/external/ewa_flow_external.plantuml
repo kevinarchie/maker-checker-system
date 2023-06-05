@@ -1,0 +1,205 @@
+@startuml EWA Flow 
+
+participant client
+participant wagely
+
+group General EWA Info
+  client -> wagely: POST /api/v2/user-apply
+  note right
+  {
+    "employee_id": "12345678",
+    "employee_name": "Bambang Wardhoyo",
+    "phone_number": "+628123456789",
+    "salary": 123456789,
+    "national_id": "1234567890123456",
+    "employee_grade": "special",
+    "bank_code": "bca",
+    "bank_account_number": "1234567890",
+    "bank_account_holder": "Istrinya Bambang",
+    "hiring_date": "2023-05-31",
+    "termination_date": "2029-05-31",
+    "pay_rate_system": "monthly",
+    "attendance_day": 21
+  }
+  end note
+  alt employee not registered
+    wagely -> client: HTTP 422 Unprocessable Entity
+    note left
+    {
+      "statusCode": 422,
+      "error": "Unprocessable Entity",
+      "message": "Employee not registered"
+    }
+    end note
+  else employee registered
+    wagely -> client: HTTP 200 OK
+    note left
+    {
+      "success": true,
+      "timestamp": "{{ISO timestamp}}",
+      "session_token": "lwejsfh983yrn2ouc19.alkdjalk",
+      "ewa_info": {
+        "status": "available",
+        "blocked_reason": "Previous EWA still outstanding",
+        "available_amount": 2000000,
+        "ewa_rate": 50.0,
+        "min_ewa": 50000,
+        "max_ewa": 3500000,
+        "already_requested_ewa": 0,
+        "already_requested_ewa_count": 0,
+        "max_count": 3,
+        "membership_fee": 350000,
+        "membership_fee_discount": 0,
+        "contribution_fee": 0,
+        "pending_payout_request": {
+          "amount": 500000,
+          "membership_fee": 350000,
+          "membership_fee_discount": 0,
+          "contribution_fee": 0,
+          "bank_code": "bni",
+          "bank_account_number": "1234567890",
+          "bank_account_holder": "Andhika Medi Putra",
+          "transaction_id": "dnasakdj-132144",
+          "requested_at": "2022-12-28T09:48:53.002Z"
+        },
+        "last_transaction": {
+          "status": "funding_received",
+          "amount": 500000,
+          "membership_fee": 350000,
+          "membership_fee_discount": 0,
+          "contribution_fee": 0,
+          "bank_code": "bni",
+          "bank_account_number": "1234567890",
+          "bank_account_holder": "Andhika Medi Putra",
+          "transaction_id": "dnasakdj-132144",
+          "requested_at": "2022-12-28T09:48:53.002Z"
+        }
+      },
+      "company_info": {
+        "paycycle_date": 1,
+        "cutoff_date": 20,
+        "scheduled_payday": 25,
+        "enabled_date": 1,
+        "disabled_date": 21,
+        "attendance_day_max": 21
+      }
+    }
+    end note
+  end
+end
+
+group EWA Disbursment Request
+  client -> wagely: POST /api/v1/ewa-forecast
+  note right
+  {
+    "amount": 123456, // mandatory
+    "session_token": "jkhasduahdslaksl" // mandatory
+  }
+  end note
+  alt Invalid session token
+    wagely -> client : HTTP 422 Unprocessable Entity
+    note left
+    {
+      "statusCode": 422,
+      "error": "Unprocessable Entity",
+      "message": "Invalid Session Token"
+    }
+    end note
+  else Invalid Request (Inelligible for EWA)
+    wagely -> client : HTTP 422 Unprocessable Entity
+    note left
+    {
+      "statusCode": 422,
+      "error": "Unprocessable Entity",
+      "message": "{{Reason why EWA is invalid}}"
+    }
+    end note
+  else Valid Request
+    wagely -> client: HTTP 200 OK
+    note left
+    {
+      "agreement_id": "uh9n813",
+      "membership_fee": 123456,
+      "membership_fee_discount": 12344,
+      "contribution_fee": 98765
+    }
+    end note
+  end
+
+  client -> wagely: POST /api/v1/ewa-request
+  note right
+  {
+    "agreement_id": "uh9n813", // mandatory
+    "session_token": "jkhasduahdslaksl" // mandatory
+  }
+  end note
+  alt Invalid session token
+    wagely -> client : HTTP 422 Unprocessable Entity
+    note left
+    {
+      "statusCode": 422,
+      "error": "Unprocessable Entity",
+      "message": "Invalid Session Token"
+    }
+    end note
+  else Invalid Agreement ID
+    wagely -> client : HTTP 422 Unprocessable Entity
+    note left
+    {
+      "statusCode": 422,
+      "error": "Unprocessable Entity",
+      "message": "Invalid Agreement ID"
+    }
+    end note
+  else Invalid Request (Inelligible for EWA)
+    wagely -> client : HTTP 422 Unprocessable Entity
+    note left
+    {
+      "statusCode": 422,
+      "error": "Unprocessable Entity",
+      "message": "{{Reason why EWA is invalid}}"
+    }
+    end note
+  else
+    wagely -> client: HTTP 200 OK
+    note left
+    {
+      "success": true,
+      "timestamp": "{{ISO timestamp}}",
+      "ewa_status": "funding_requested"
+    }
+    end note
+  end
+end
+
+group EWA status polling
+  client -> wagely: GET /api/v1/ewa-status?employee_id={{employee_id}}
+  wagely -> client: HTTP 200 OK
+  note left
+  {
+    "success": true,
+    "timestamp": "{{ISO timestamp}}",
+    "ewa_status": "{{status}}"
+  }
+  end note
+end
+...after some time...
+
+group EWA disbursement callback
+  wagely -> client: POST {{EWA callback URL}}
+  note left
+  {
+    "agreement_id": "uh9n813",
+    "membership_fee": {
+      "wagely": 12345,
+      "commission": 8000
+    },
+    "membership_fee_discount": 12344,
+    "contribution_fee": 98765,
+    "status": "{{funding_received | funding_rejected}}"
+  }
+  end note
+  client -> wagely: HTTP 200 OK
+end
+
+@enduml

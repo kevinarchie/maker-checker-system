@@ -1,0 +1,119 @@
+@startuml Registration Flow 
+
+participant client
+participant wagely
+
+group Registration
+  autonumber
+  client -> wagely: GET /api/v1/contract?type=tnc
+  wagely -> client: HTTP 200 OK\nTerms and Conditions PDF Template HTML
+  |||
+  client -> wagely: GET /api/v1/contract?type=pn
+  wagely -> client: HTTP 200 OK\nPrivacy Notice PDF Template HTML
+  |||
+  client -> client: Fill out and digitally sign Terms and Condition, Privacy Notice
+  |||
+  client -> wagely: POST /api/v1/temporary-file\nPayload: Terms and Conditions PDF
+  note right
+  {
+    "filename": "{{date YYYY-MM-DD_HHmm}}-{{employee_id}}-tnc.pdf",
+    "base64": "ajshdacnajknca"
+  }
+  end note
+  wagely -> client: HTTP 200 OK
+  note left
+  {
+    "success": true,
+    "timestamp": "{{ISO timestamp}}",
+    "key": "/key/of/file"
+  }
+  end note
+  |||
+  client -> wagely: POST /api/v1/temporary-file\nPayload: Privacy Notice PDF
+  note right
+  {
+    "filename": "{{date YYYY-MM-DD_HHmm}}-{{employee_id}}-pn.pdf",
+    "base64": "ajshdacnajknca"
+  }
+  end note
+  wagely -> client: HTTP 200 OK
+  note left
+  {
+    "success": true,
+    "timestamp": "{{ISO timestamp}}",
+    "key": "/key/of/file"
+  }
+  end note
+  |||
+  client -> wagely: POST /api/v1/register
+  note right
+  {
+    "employee_id": "1234567AB", // mandatory
+    "employee_name": "Bambang Wardhoyo", 
+    "phone_number": "+628123456789",
+    "salary": 123456789, // mandatory
+    "national_id": "1234567890123456",
+    "employee_grade": "special",
+    "bank_code": "bca",  // mandatory
+    "bank_account_number": "1234567890", // mandatory
+    "bank_account_holder": "Istrinya Bambang", // mandatory
+    "hiring_date": "2023-05-31",
+    "termination_date": "2029-05-31",
+    "pay_rate_system": "daily", // mandatory
+    "tnc_file_key": "/key/of/tnc_file", // mandatory
+    "pn_file_key": "/key/of/pn_file", // mandatory
+    "extra_data": { // free form
+      "title": "Penjaga WC",
+      "number_of_spouse": 5
+      "salary_history": [{
+        "date": "2020-01-01",
+        "salary": 1000000
+      }, {
+        "date": "2020-02-01",
+        "salary": 2000000
+      }]
+    }
+  }
+  end note
+  alt employee not registered yet
+    wagely -> client: HTTP 200 OK
+    note left
+    {
+      "success": true,
+      "timestamp": "{{ISO timestamp}}",
+      "registration_status": "pending"
+    }
+    end note
+    ...after some time...
+    wagely -> client: POST {{callback_url}}\nPayload:\n * employee_id\n * status
+    note right
+    {
+      "employee_id": "12345678AX",
+      "registration_status": "{{registered|rejected}}}",
+      "rejected_reasons": ["TNC File Corrupted", "Invalid Bank Account"]
+    }
+    end note
+    client -> wagely: HTTP 200 OK
+  else employee already registered
+    wagely -> client: HTTP 200 OK
+    note left
+    {
+      "success": true,
+      "timestamp": "{{ISO timestamp}}",
+      "registration_status": "registered"
+    }
+    end note
+  else employee recently rejected
+    wagely -> client: HTTP 200 OK
+    note left
+    {
+      "success": true,
+      "timestamp": "{{ISO timestamp}}",
+      "registration_status": "rejected"
+    }
+    end note
+  end
+  autonumber stop
+end
+
+@enduml

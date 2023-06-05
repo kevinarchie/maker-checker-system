@@ -1,0 +1,188 @@
+@startuml Registration Flow 
+
+participant client
+participant wagely
+
+
+group Transaction History List
+  client -> wagely: GET /api/v2/transaction-history
+  wagely -> client: HTTP 200 OK
+  note right
+    {
+      "success": true,
+      "timestamp": "2022-10-06T22:43:12.127Z",
+      "current_page": 1,
+      "current_limit": 10,
+      "total_page": 1,
+      "total_data": 1,
+      "data": [
+        {
+          "created_at": 1667381826,
+          "status": "funding_received",
+          "bank_account_number": "5871026500",
+          "bank_account_name": "Karen Pearson",
+          "bank_code": "SCBLBDDX",
+          "ewa_amount": 125000,
+          "transaction_id": "123-b49742ec-6527-4b10-a8fb-191205c730ee",
+          "membership_fee": 4250,
+          "membership_fee_discount": 500,
+          "contribution_fee": 0,
+          "promo": {
+            "id": "k8mep2bMyJ",
+            "name": "Transaksi lebih murah untuk Anda",
+            "hashtag": "#KoinUntukDiskon",
+            "description": "Transaksi lebih murah untuk Anda",
+            "note": "Ubah koin wagely Anda menjadi diskon yang dapat Anda gunakan dalam penarikan atau pembelian layanan Anda.",
+            "type": "rewards_coins_to_discounts",
+            "data": null,
+            "is_active": true,
+            "language": "id-ID",
+            "max_discount": 10000
+          },
+          "reward_used": {
+            "type": "free-trx",
+            "coins_used": 100
+          },
+          "transaction_type": "ewa",
+          "service_name": "EWA Withdrawal",
+          "service_image": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.flaticon.com%2Ffree-icon%2Fbank-building_66455&psig=AOvVaw0rpqem_D-7Cc5DwikIjZhz&ust=1673341543641000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCJiQt5WRuvwCFQAAAAAdAAAAABAD",
+          "product_name": "Standard Chartered Bank",
+          "ewa_components": [
+            {
+              "user_id": 108579,
+              "group": "amount",
+              "type": "requested_amount",
+              "reference": null,
+              "amount": 125000,
+              "operation": "addition",
+              "order": 0
+            },
+            {
+              "user_id": 108579,
+              "group": "fee",
+              "type": "company_membership_fee",
+              "reference": null,
+              "amount": 2500,
+              "operation": "substraction",
+              "order": 0
+            },
+            {
+              "user_id": 108579,
+              "group": "fee",
+              "type": "wagely_ewa_membership_fee_discount",
+              "reference": null,
+              "amount": 500,
+              "operation": "substraction",
+              "order": 1
+            },
+            {
+              "user_id": 108579,
+              "group": "fee",
+              "type": "company_contribution_fee",
+              "reference": null,
+              "amount": 0,
+              "operation": "substraction",
+              "order": 0
+            }
+          ],
+          "bank_name": "Standard Chartered Bank",
+          "disbursement_option": {
+            "code": "instant",
+            "name": "Penarikan instan",
+            "fee": 10000
+          }
+        }
+      ]
+    }
+  end note
+end
+
+group Transaction History Detail
+  client -> wagely: GET /api/v2/transaction-history/{{transaction_id}}
+  wagely -> client: HTTP 200 OK
+  note right
+  {
+    "success": true,
+    "timestamp": "2022-10-06T22:43:12.127Z",
+    "data": {
+      "transaction_id": "123-b49742ec-6527-4b10-a8fb-191205c730ee",
+      "created_at": "2022-10-06T22:43:12.127Z",
+      "status": "funding_received",
+      "bank_account_number": "5871026500",
+      "bank_account_name": "Karen Pearson",
+      "bank_code": "SCBLBDDX",
+      "bank_name": "Standard Chartered Bank",
+      "amount": 125000,
+      "membership_fee": 4250,
+      "membership_fee_discount": 500,
+      "contribution_fee": 0,
+      "total": 128750,
+      "promo": {
+        "id": "k8mep2bMyJ",
+        "name": "Transaksi lebih murah untuk Anda",
+        "hashtag": "#KoinUntukDiskon",
+        "description": "Transaksi lebih murah untuk Anda",
+        "note": ">-\nUbah koin wagely Anda menjadi diskon yang dapat\nAnda gunakan dalam penarikan\natau pembelian layanan Anda.",
+        "type": "rewards_coins_to_discounts",
+        "data": null,
+        "is_active": true,
+        "language": "id-ID",
+        "max_discount": 10000
+      },
+      "reward_used": {
+        "type": "free-trx",
+        "coins_used": 100
+      },
+      "transaction_type": "ewa",
+      "service_name": "EWA Withdrawal",
+      "service_image": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.flaticon.com%2Ffree-icon%2Fbank-building_66455&psig=AOvVaw0rpqem_D-7Cc5DwikIjZhz&ust=1673341543641000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCJiQt5WRuvwCFQAAAAAdAAAAABAD",
+      "product_name": "Standard Chartered Bank",
+      "ewa_components": [
+        {
+          "user_id": 108579,
+          "group": "amount",
+          "type": "requested_amount",
+          "reference": null,
+          "amount": 125000,
+          "operation": "addition",
+          "order": 0
+        },
+        {
+          "user_id": 108579,
+          "group": "fee",
+          "type": "company_membership_fee",
+          "reference": null,
+          "amount": 2500,
+          "operation": "substraction",
+          "order": 0
+        },
+        {
+          "user_id": 108579,
+          "group": "fee",
+          "type": "wagely_ewa_membership_fee_discount",
+          "reference": null,
+          "amount": 500,
+          "operation": "substraction",
+          "order": 1
+        },
+        {
+          "user_id": 108579,
+          "group": "fee",
+          "type": "company_contribution_fee",
+          "reference": null,
+          "amount": 0,
+          "operation": "substraction",
+          "order": 0
+        }
+      ],
+      "disbursement_option": {
+        "code": "instant",
+        "name": "Penarikan instan",
+        "fee": 10000
+      }
+    }
+  }
+  end note
+end
+
+@enduml
